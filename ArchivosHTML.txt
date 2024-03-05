@@ -1,0 +1,23 @@
+Index.html
+
+Formulario de reserva de vuelo
+
+
+
+PerfilUsuario.html
+
+Ver el saldo
+Ver sus datos
+Ver sus reservas (posibilidad de cancelar) (devolverle el saldo)
+
+
+
+Admin.html
+
+Menu de administrador para eliminar,insertar,modificar vuelos y usuarios
+
+
+
+InicioSesion.html
+
+Iniciar sesion o registrarse
