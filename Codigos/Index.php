@@ -35,6 +35,17 @@
         <input type="date" id="fecha" name="fecha" required><br><br>
         
         <input type="submit" value="Consultar Vuelos">
+        
+    </form>
+    <?php
+    if (!isset($_COOKIE["usuario_id"])) {
+        echo '<form method="post" action="InicioSesion.php">
+                <input type="submit" value="Iniciar sesión">
+              </form>';
+    }
+    ?>
+    <form method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>">
+        <input type="submit" name="cerrar_sesion" value="Cerrar sesión">
     </form>
 
     <!-- Este php recibe el formulario de consulta de vuelos de index.php
@@ -43,6 +54,24 @@
     y entonces mostrar los vuelos que cumplan las condiciones al usuario.-->
 
     <?php
+    session_start();
+    function cerrarSesion() {
+        // Establecer la fecha de caducidad en el pasado para eliminar la cookie
+        setcookie("usuario_id", "", time() - 3600, "/");
+    }
+    
+    // Verificar si se ha enviado una solicitud POST
+    if ($_SERVER["REQUEST_METHOD"] == "POST") {
+        // Verificar si se hizo clic en el botón "Cerrar sesión"
+        if(isset($_POST["cerrar_sesion"])) {
+            // Llamar a la función para eliminar la cookie
+            cerrarSesion();
+            // Redirigir a una página de confirmación o a la página de inicio
+            header("Location: index.php");
+            exit();
+        }
+    }
+    
     if ($_SERVER["REQUEST_METHOD"] == "POST")
     {
         // Establecer la conexión con la base de datos:
@@ -103,72 +132,84 @@
         {
             if(isset($_POST['vuelo_id']))
             {
-                // Obtener el id del vuelo a reservar:
-                $vuelo_id = $_POST['vuelo_id'];
 
-                // Obtener id usuario de la cookie:
-                $usuario_id = $_COOKIE["usuario_id"];
-
-                // Comprobar si tiene el vuelo reservado
-                $consulta_reserva = "SELECT idReserva FROM reserva WHERE idUsuario = $usuario_id AND idVuelo = $vuelo_id";
-                $resultado_reserva = $conn->query($consulta_reserva);
-                
-                // Si el usuario ya ha reservado un vuelo, no puede volver a reservarlo:
-                if($resultado_reserva->num_rows > 0)
+                if(!isset($_COOKIE["usuario_id"]))
                 {
-                    $consulta_capacidad = "SELECT capacidad FROM vuelos WHERE id = $vuelo_id";
-                    $resultado_capacidad = $conn->query($consulta_capacidad);
+                    //! Enviar al usuario a InicioSesion.php
+                    header("Location: InicioSesion.php");
+                    exit();
+                }
+                else
+                {
+                    // Obtener el id del vuelo a reservar:
+                    $vuelo_id = $_POST['vuelo_id'];
 
-                    if ($resultado_capacidad->num_rows > 0)
+                    // Obtener id usuario de la cookie:
+                    $usuario_id = $_COOKIE["usuario_id"];
+
+                    // Comprobar si tiene el vuelo reservado
+                    $consulta_reserva = "SELECT idReserva FROM reservas WHERE idUsuario = $usuario_id AND idVuelo = $vuelo_id";
+                    $resultado_reserva = $conn->query($consulta_reserva);
+                    
+                    // Si el usuario ya ha reservado un vuelo, no puede volver a reservarlo:
+                    if($resultado_reserva->num_rows > 0)
                     {
-                        // Obtener la capacidad y precio del vuelo a reservar:
-                        $row = $resultado_capacidad->fetch_assoc();
-                        $capacidad_actual = $row['capacidad'];
-                        $precio = $row['precio'];
-                        
-                        // Verificar si la capacidad actual es mayor o igual a 1:
-                        if ($capacidad_actual >= 1)
+                        $consulta_capacidad = "SELECT capacidad FROM vuelos WHERE id = $vuelo_id";
+                        $resultado_capacidad = $conn->query($consulta_capacidad);
+
+                        if ($resultado_capacidad->num_rows > 0)
                         {
-                            // Comprobar si el usuario tiene saldo:
-                            $consulta_saldo = "SELECT saldo FROM usuarios WHERE id = $usuario_id";
-                            $resultado_saldo = $conn->query($consulta_saldo);
-
-                            if ($resultado_saldo->num_rows > 0)
+                            // Obtener la capacidad y precio del vuelo a reservar:
+                            $row = $resultado_capacidad->fetch_assoc();
+                            $capacidad_actual = $row['capacidad'];
+                            $precio = $row['precio'];
+                            
+                            // Verificar si la capacidad actual es mayor o igual a 1:
+                            if ($capacidad_actual >= 1)
                             {
-                                $row = $resultado_saldo->fetch_assoc();
-                                $saldo = $row["saldo"];
+                                // Comprobar si el usuario tiene saldo:
+                                $consulta_saldo = "SELECT saldo FROM usuarios WHERE id = $usuario_id";
+                                $resultado_saldo = $conn->query($consulta_saldo);
 
-                                if($saldo >= $precio)
+                                if ($resultado_saldo->num_rows > 0)
                                 {
-                                    echo "¡Reserva realizada con éxito!";
-                                    // Restar precio al saldo del usuario:
-                                    $nuevoSaldo = $saldo - $precio;
-                                    $actualizar_saldo = "UPDATE usuarios SET Saldo = $nuevoSaldo WHERE id = $usuario_id";
+                                    $row = $resultado_saldo->fetch_assoc();
+                                    $saldo = $row["saldo"];
 
-                                    // Restar capacidad al vuelo:
-                                    $nueva_capacidad = $capacidad_actual - 1;
-                                    $actualizar_capacidad = "UPDATE vuelos SET capacidad = $nueva_capacidad WHERE id = $vuelo_id";
-
-                                    //! INSERTAR RESERVA EN CUENTA DE USUARIO
+                                    if($saldo >= $precio)
+                                    {
+                                        echo "¡Reserva realizada con éxito!";
+                                        // Restar precio al saldo del usuario:
+                                        $nuevoSaldo = $saldo - $precio;
+                                        $actualizar_saldo = "UPDATE usuarios SET Saldo = $nuevoSaldo WHERE id = $usuario_id";
+                                        $resultado_saldo = $conn->query($actualizar_saldo);
                                     
+                                        // Restar capacidad al vuelo:
+                                        $nueva_capacidad = $capacidad_actual - 1;
+                                        $actualizar_capacidad = "UPDATE vuelos SET capacidad = $nueva_capacidad WHERE id = $vuelo_id";
+                                        $resultado_capacidad = $conn->query($actualizar_capacidad);
+
+                                        //! INSERTAR RESERVA EN CUENTA DE USUARIO
+                                        
+                                    }
+                                } 
+                                else
+                                {
+                                    //! Enviar al usuario a InicioSesion.php
+                                    header("Location: InicioSesion.php");
+                                    exit();
                                 }
                             } 
                             else
                             {
-                                //! Enviar al usuario a InicioSesion.php
-                                header("Location: InicioSesion.php");
-                                exit();
+                                echo "El vuelo seleccionado no tiene capacidad para el número de personas reservandos.";
                             }
-                        } 
-                        else
-                        {
-                            echo "El vuelo seleccionado no tiene capacidad para el número de personas reservandos.";
                         }
                     }
-                }
-                else
-                {
-                    echo "Ya has reservado ese vuelo.";
+                    else
+                    {
+                        echo "Ya has reservado ese vuelo.";
+                    }
                 }
             }
         } 
