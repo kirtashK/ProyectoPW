@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Formulario de consulta de Vuelos</title>
-
+    <link rel="stylesheet" href="estilos.css">
     <script>
         function validarFechas()
         {
@@ -20,23 +20,40 @@
         }
     </script>
 </head>
-
 <body>
-    <h2>Formulario de consulta de Vuelos</h2>
-    <form action="index.php" method="post" onsubmit="return validarFechas()">
-        
-        <label for="origen">Origen:</label><br>
-        <input type="text" id="origen" name="origen" required><br><br>
-        
-        <label for="destino">Destino:</label><br>
-        <input type="text" id="destino" name="destino" required><br><br>
-        
-        <label for="fecha">Fecha de Salida:</label><br>
-        <input type="date" id="fecha" name="fecha" required><br><br>
-        
-        <input type="submit" value="Consultar Vuelos">
-        
-    </form>
+    <header>
+        <h1>TUSMEJORESVUELOS.COM</h1>
+    </header>
+    <div class="container">
+        <h2>Formulario de consulta de Vuelos</h2>
+        <form action="index.php" method="post" onsubmit="return validarFechas()">
+            <label for="origen">Origen:</label><br>
+            <input type="text" id="origen" name="origen" required><br><br>
+            <label for="destino">Destino:</label><br>
+            <input type="text" id="destino" name="destino" required><br><br>
+            <label for="fecha">Fecha de Salida:</label><br>
+            <input type="date" id="fecha" name="fecha" required><br><br>
+            <input type="submit" value="Consultar Vuelos">
+        </form>
+        <?php
+        if (!isset($_COOKIE["usuario_id"])) {
+            echo '<form method="post" action="InicioSesion.php">
+                    <input type="submit" value="Iniciar sesión">
+                  </form>';
+        }
+        ?>
+        <form method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>">
+            <input type="submit" name="cerrar_sesion" value="Cerrar sesión">
+        </form>
+
+        <!-- PHP para procesar el formulario -->
+        <?php
+        // Código PHP...
+        ?>
+    </div>
+</body>
+</html>
+
     <?php
     if (!isset($_COOKIE["usuario_id"])) {
         echo '<form method="post" action="InicioSesion.php">
