@@ -36,7 +36,8 @@
             <input type="submit" value="Consultar Vuelos">
         </form>
         <?php
-        if (!isset($_COOKIE["usuario_id"])) {
+        if (!isset($_COOKIE["usuario_id"]))
+        {
             echo '<form method="post" action="InicioSesion.php">
                     <input type="submit" value="Iniciar sesión">
                   </form>';
@@ -45,17 +46,13 @@
         <form method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>">
             <input type="submit" name="cerrar_sesion" value="Cerrar sesión">
         </form>
-
-        <!-- PHP para procesar el formulario -->
-        <?php
-        // Código PHP...
-        ?>
     </div>
 </body>
 </html>
 
     <?php
-    if (!isset($_COOKIE["usuario_id"])) {
+    if (!isset($_COOKIE["usuario_id"]))
+    {
         echo '<form method="post" action="InicioSesion.php">
                 <input type="submit" value="Iniciar sesión">
               </form>';
@@ -72,15 +69,18 @@
 
     <?php
     session_start();
-    function cerrarSesion() {
+    function cerrarSesion()
+    {
         // Establecer la fecha de caducidad en el pasado para eliminar la cookie
         setcookie("usuario_id", "", time() - 3600, "/");
     }
     
     // Verificar si se ha enviado una solicitud POST
-    if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    if ($_SERVER["REQUEST_METHOD"] == "POST")
+    {
         // Verificar si se hizo clic en el botón "Cerrar sesión"
-        if(isset($_POST["cerrar_sesion"])) {
+        if(isset($_POST["cerrar_sesion"]))
+        {
             // Llamar a la función para eliminar la cookie
             cerrarSesion();
             // Redirigir a una página de confirmación o a la página de inicio
@@ -114,7 +114,7 @@
             $fecha = $_POST['fecha'];
 
             // Consulta SQL para seleccionar los vuelos:
-            $sql = "SELECT * FROM vuelos WHERE origen = '$origen' AND destino = '$destino' AND fecha = '$fecha'";
+            $sql = "SELECT * FROM vuelos WHERE origen = '$origen' AND destino = '$destino' AND fecha = '$fecha' AND capacidad > 0";
 
             // Ejecutar la consulta:
             $result = $conn->query($sql);
@@ -127,7 +127,7 @@
 
                 while ($row = $result->fetch_assoc())
                 {
-                    echo "<li>Origen: " . $row["origen"] . ", Destino: " . $row["destino"] . ", Fecha de Salida: " . $row["fecha"] . ", Hora de Salida: " . $row["hora_salida"] . ", Hora de Llegada: " . $row["hora_llegada"] . ", Precio: " . $row["precio"];
+                    echo "<li>Origen: " . $row["origen"] . ", Destino: " . $row["destino"] . "\nFecha de Salida: " . $row["fecha"] . ", Hora de Salida: " . $row["hora_salida"] . ", Hora de Llegada: " . $row["hora_llegada"] . "\nPrecio: " . $row["precio"];
 
                     // Botón para reservar los vuelos mostrados:
                     echo "<form action='index.php' method='post'>";
@@ -152,7 +152,7 @@
 
                 if(!isset($_COOKIE["usuario_id"]))
                 {
-                    //! Enviar al usuario a InicioSesion.php
+                    // Enviar al usuario a InicioSesion.php:
                     header("Location: InicioSesion.php");
                     exit();
                 }
@@ -164,7 +164,7 @@
                     // Obtener id usuario de la cookie:
                     $usuario_id = $_COOKIE["usuario_id"];
 
-                    // Comprobar si tiene el vuelo reservado
+                    // Comprobar si tiene el vuelo reservado:
                     $consulta_reserva = "SELECT idReserva FROM reservas WHERE idUsuario = $usuario_id AND idVuelo = $vuelo_id";
                     $resultado_reserva = $conn->query($consulta_reserva);
                     
@@ -212,7 +212,7 @@
                                 } 
                                 else
                                 {
-                                    //! Enviar al usuario a InicioSesion.php
+                                    // Enviar al usuario a InicioSesion.php:
                                     header("Location: InicioSesion.php");
                                     exit();
                                 }
