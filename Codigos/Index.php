@@ -149,7 +149,6 @@
         {
             if(isset($_POST['vuelo_id']))
             {
-
                 if(!isset($_COOKIE["usuario_id"]))
                 {
                     // Enviar al usuario a InicioSesion.php:
@@ -171,17 +170,17 @@
                     // Si el usuario ya ha reservado un vuelo, no puede volver a reservarlo:
                     if($resultado_reserva->num_rows > 0)
                     {
+                        // Obtener la capacidad del vuelo:
                         $consulta_capacidad = "SELECT capacidad FROM vuelos WHERE id = $vuelo_id";
                         $resultado_capacidad = $conn->query($consulta_capacidad);
 
                         if ($resultado_capacidad->num_rows > 0)
                         {
-                            // Obtener la capacidad y precio del vuelo a reservar:
+                            // Obtener la capacidad y precio del vuelo a reservar y comprobar si hay suficiente capacidad:
                             $row = $resultado_capacidad->fetch_assoc();
                             $capacidad_actual = $row['capacidad'];
                             $precio = $row['precio'];
                             
-                            // Verificar si la capacidad actual es mayor o igual a 1:
                             if ($capacidad_actual >= 1)
                             {
                                 // Comprobar si el usuario tiene saldo:
@@ -195,7 +194,6 @@
 
                                     if($saldo >= $precio)
                                     {
-                                        echo "¡Reserva realizada con éxito!";
                                         // Restar precio al saldo del usuario:
                                         $nuevoSaldo = $saldo - $precio;
                                         $actualizar_saldo = "UPDATE usuarios SET Saldo = $nuevoSaldo WHERE id = $usuario_id";
@@ -206,8 +204,35 @@
                                         $actualizar_capacidad = "UPDATE vuelos SET capacidad = $nueva_capacidad WHERE id = $vuelo_id";
                                         $resultado_capacidad = $conn->query($actualizar_capacidad);
 
-                                        //! INSERTAR RESERVA EN CUENTA DE USUARIO
-                                        
+                                        // Obtener $idReserva:
+                                        $consulta_reserva = "SELECT MAX(idReserva) AS maxId FROM reservas";
+                                        $resultado_reserva = $conn->query($consulta_reserva);
+
+                                        if ($resultado_reserva->num_rows > 0)
+                                        {
+                                            $row = $resultado_reserva->fetch_assoc();
+                                            $reserva_id = $row["maxId"];
+                                        }
+                                        else
+                                        {
+                                            $reserva_id = 1;
+                                        }
+
+                                        // Obtener la fecha actual:
+                                        $fecha_reserva = date("Y-m-d");
+
+                                        //* Insertar la reserva:
+                                        $insertar_reserva =    "INSERT INTO reservas (idReserva, idVuelo, idUsuario, fechaReserva, Precio) 
+                                                                VALUES ('$reserva_id', '$vuelo_id', '$usuario_id', '$fecha_reserva', '$precio')";
+
+                                        if ($conn->query($insertar_reserva) === TRUE)
+                                        {
+                                            echo "¡Reserva realizada con éxito!";
+                                        }
+                                        else
+                                        {
+                                            echo "Error al insertar la reserva: " . $conn->error;
+                                        }
                                     }
                                 } 
                                 else
