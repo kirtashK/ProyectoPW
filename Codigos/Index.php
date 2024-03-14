@@ -212,6 +212,7 @@
                                         {
                                             $row = $resultado_reserva->fetch_assoc();
                                             $reserva_id = $row["maxId"];
+                                            $reserva_id += 1;
                                         }
                                         else
                                         {
