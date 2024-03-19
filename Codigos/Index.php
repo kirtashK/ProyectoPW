@@ -9,11 +9,17 @@
         function validarFechas()
         {
             var fecha = document.getElementById('fecha').value;
-            var fechaRegreso = document.getElementById('fechaRegreso').value;
+            /*var fechaRegreso = document.getElementById('fechaRegreso').value;
 
             if (fechaRegreso !== '' && fechaRegreso < fecha)
             {
                 alert('La fecha de regreso no puede ser anterior a la fecha de salida.');
+                return false;
+            }*/
+            const fechaActual = new Date().toISOString().slice(0, 10);
+            if(fecha < fechaActual)
+            {
+                alert('Debes seleccionar una fecha posterior a la actual');
                 return false;
             }
             return true;
@@ -43,24 +49,36 @@
                   </form>';
         }
         ?>
-        <form method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>">
+
+        <!-- Botones de administrador o ver perfil -->
+        <?php
+        if (isset($_COOKIE["usuario_id"]))
+        {
+            if ($_COOKIE["usuario_rol"] == "admin")
+            {
+                echo '<form method="post" action="admin.php">
+                        <input type="submit" value="Administrador">
+                      </form>';
+            }
+            else
+            {
+                echo '<form method="post" action="perfilUsuario.php">
+                        <input type="submit" value="Ver perfil">
+                      </form>';
+            }
+            ?>
+            <form method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>">
             <input type="submit" name="cerrar_sesion" value="Cerrar sesión">
-        </form>
+            </form>
+        <?php
+        }
+        ?>
+        
     </div>
 </body>
 </html>
 
-    <?php
-    if (!isset($_COOKIE["usuario_id"]))
-    {
-        echo '<form method="post" action="InicioSesion.php">
-                <input type="submit" value="Iniciar sesión">
-              </form>';
-    }
-    ?>
-    <form method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>">
-        <input type="submit" name="cerrar_sesion" value="Cerrar sesión">
-    </form>
+
 
     <!-- Este php recibe el formulario de consulta de vuelos de index.php
     y lo procesa, tendrá que conectarse a la base de datos, 
@@ -91,19 +109,7 @@
     
     if ($_SERVER["REQUEST_METHOD"] == "POST")
     {
-        // Establecer la conexión con la base de datos:
-        $servername = "localhost";
-        $username = "pw";
-        $password = "pw";
-        $database = "pw_vuelo";
-
-        $conn = new mysqli($servername, $username, $password, $database);
-
-        // Verificar la conexión:
-        if ($conn->connect_error)
-        {
-            die("Error de conexión: " . $conn->connect_error);
-        }
+        require_once "config.php";
 
         // Si vuelo_id esta vacio, todavia no se ha dado a reservar un vuelo:
         if (!isset($_POST['vuelo_id']))
@@ -127,7 +133,7 @@
 
                 while ($row = $result->fetch_assoc())
                 {
-                    echo "<li>Origen: " . $row["origen"] . ", Destino: " . $row["destino"] . "\nFecha de Salida: " . $row["fecha"] . ", Hora de Salida: " . $row["hora_salida"] . ", Hora de Llegada: " . $row["hora_llegada"] . "\nPrecio: " . $row["precio"];
+                    echo "<li>Origen: " . $row["origen"] . ", Destino: " . $row["destino"] . "\nFecha de Salida: " . $row["fecha"] . ", Hora de Salida: " . $row["hora_salida"] . ", Hora de Llegada: " . $row["hora_llegada"] . "\precio: " . $row["precio"];
 
                     // Botón para reservar los vuelos mostrados:
                     echo "<form action='index.php' method='post'>";
@@ -168,10 +174,10 @@
                     $resultado_reserva = $conn->query($consulta_reserva);
                     
                     // Si el usuario ya ha reservado un vuelo, no puede volver a reservarlo:
-                    if($resultado_reserva->num_rows > 0)
+                    if($resultado_reserva->num_rows == 0)
                     {
                         // Obtener la capacidad del vuelo:
-                        $consulta_capacidad = "SELECT capacidad FROM vuelos WHERE id = $vuelo_id";
+                        $consulta_capacidad = "SELECT precio, capacidad FROM vuelos WHERE id = $vuelo_id";
                         $resultado_capacidad = $conn->query($consulta_capacidad);
 
                         if ($resultado_capacidad->num_rows > 0)
@@ -184,7 +190,7 @@
                             if ($capacidad_actual >= 1)
                             {
                                 // Comprobar si el usuario tiene saldo:
-                                $consulta_saldo = "SELECT saldo FROM usuarios WHERE id = $usuario_id";
+                                $consulta_saldo = "SELECT saldo FROM usuarios WHERE dni = $usuario_id";
                                 $resultado_saldo = $conn->query($consulta_saldo);
 
                                 if ($resultado_saldo->num_rows > 0)
@@ -196,7 +202,7 @@
                                     {
                                         // Restar precio al saldo del usuario:
                                         $nuevoSaldo = $saldo - $precio;
-                                        $actualizar_saldo = "UPDATE usuarios SET Saldo = $nuevoSaldo WHERE id = $usuario_id";
+                                        $actualizar_saldo = "UPDATE usuarios SET Saldo = $nuevoSaldo WHERE dni = $usuario_id";
                                         $resultado_saldo = $conn->query($actualizar_saldo);
                                     
                                         // Restar capacidad al vuelo:
@@ -223,7 +229,7 @@
                                         $fecha_reserva = date("Y-m-d");
 
                                         //* Insertar la reserva:
-                                        $insertar_reserva =    "INSERT INTO reservas (idReserva, idVuelo, idUsuario, fechaReserva, Precio) 
+                                        $insertar_reserva =    "INSERT INTO reservas (idReserva, idVuelo, idUsuario, fechaReserva, precio) 
                                                                 VALUES ('$reserva_id', '$vuelo_id', '$usuario_id', '$fecha_reserva', '$precio')";
 
                                         if ($conn->query($insertar_reserva) === TRUE)
