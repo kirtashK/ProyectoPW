@@ -109,8 +109,12 @@
     
     if ($_SERVER["REQUEST_METHOD"] == "POST")
     {
-        require_once "config.php";
+        $servername = "localhost";
+        $username = "pw";
+        $password = "pw";
+        $database = "pw_vuelo";
 
+        $conn = new mysqli($servername, $username, $password, $database);
         // Si vuelo_id esta vacio, todavia no se ha dado a reservar un vuelo:
         if (!isset($_POST['vuelo_id']))
         {

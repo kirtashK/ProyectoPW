@@ -3,22 +3,12 @@ require_once "config.php";
 
 session_start();
 
+
 if (!isset($_COOKIE["usuario_rol"]) || $_COOKIE["usuario_rol"] !== "admin") {
     die("Acceso denegado. Debes iniciar sesión como administrador para acceder a esta página.");
 }
 
-// Función para crear una nueva reserva:
-function crearReserva($pdo, $idVuelo, $idUsuario, $fechaReserva, $precio) {
-    try {
-        $sql = "INSERT INTO reservas (idVuelo, idUsuario, fechaReserva, precio) 
-                VALUES (?, ?, ?, ?)";
-        $stmt = $pdo->prepare($sql);
-        $stmt->execute([$idVuelo, $idUsuario, $fechaReserva, $precio]);
-        echo "Nueva reserva creada con éxito.";
-    } catch (PDOException $e) {
-        echo "Error al crear la reserva: " . $e->getMessage();
-    }
-}
+
 
 // Función para mostrar todas las reservas:
 function mostrarReservas($pdo) {
@@ -55,17 +45,72 @@ function modificarReserva($pdo, $idReserva, $idVuelo, $idUsuario, $fechaReserva,
     }
 }
 
-// Función para eliminar una reserva:
-function eliminarReserva($pdo, $idReserva) {
+// Función para crear una nueva reserva y actualizar la capacidad del vuelo:
+function crearReserva($pdo, $idVuelo, $idUsuario, $fechaReserva, $precio) {
     try {
-        $sql = "DELETE FROM reservas WHERE idReserva=?";
-        $stmt = $pdo->prepare($sql);
-        $stmt->execute([$idReserva]);
-        echo "Reserva eliminada con éxito.";
+        // Verificar la capacidad disponible del vuelo
+        $sql_capacidad = "SELECT capacidad FROM vuelos WHERE id=?";
+        $stmt_capacidad = $pdo->prepare($sql_capacidad);
+        $stmt_capacidad->execute([$idVuelo]);
+        $capacidad_vuelo = $stmt_capacidad->fetchColumn();
+        
+        // Verificar si hay suficiente capacidad disponible
+        if ($capacidad_vuelo > 0) {
+            $pdo->beginTransaction(); // Comenzar transacción
+            
+            // Insertar la reserva
+            $sql_insertar_reserva = "INSERT INTO reservas (idVuelo, idUsuario, fechaReserva, precio) 
+                                     VALUES (?, ?, ?, ?)";
+            $stmt_insertar_reserva = $pdo->prepare($sql_insertar_reserva);
+            $stmt_insertar_reserva->execute([$idVuelo, $idUsuario, $fechaReserva, $precio]);
+            
+            // Actualizar la capacidad del vuelo
+            $sql_actualizar_capacidad = "UPDATE vuelos SET capacidad = capacidad - 1 WHERE id=?";
+            $stmt_actualizar_capacidad = $pdo->prepare($sql_actualizar_capacidad);
+            $stmt_actualizar_capacidad->execute([$idVuelo]);
+            
+            $pdo->commit(); // Confirmar transacción
+            echo "Nueva reserva creada con éxito.";
+        } else {
+            echo "No hay suficiente capacidad disponible en el vuelo.";
+        }
     } catch (PDOException $e) {
-        echo "Error al eliminar la reserva: " . $e->getMessage();
+        echo "Error al crear la reserva: " . $e->getMessage();
     }
 }
+
+// Función para eliminar una reserva y devolver el dinero al usuario, y actualizar la capacidad del vuelo:
+// Función para eliminar una reserva y devolver el dinero al usuario, y actualizar la capacidad del vuelo:
+function eliminarReserva($pdo, $idReserva) {
+    try {
+        $pdo->beginTransaction(); // Comenzar transacción
+        
+        // Obtener el idVuelo de la reserva
+        $sql_info_reserva = "SELECT idVuelo FROM reservas WHERE idReserva=?";
+        $stmt_info_reserva = $pdo->prepare($sql_info_reserva);
+        $stmt_info_reserva->execute([$idReserva]);
+        $idVuelo = $stmt_info_reserva->fetchColumn();
+        echo $idVuelo;
+        
+        // Eliminar la reserva
+        $sql_eliminar = "DELETE FROM reservas WHERE idReserva=?";
+        $stmt_eliminar = $pdo->prepare($sql_eliminar);
+        $stmt_eliminar->execute([$idReserva]);
+        
+        // Incrementar la capacidad del vuelo
+        $sql_incrementar_capacidad = "UPDATE vuelos SET capacidad = capacidad + 1 WHERE id=?";
+        $stmt_incrementar_capacidad = $pdo->prepare($sql_incrementar_capacidad);
+        $stmt_incrementar_capacidad->execute([$idVuelo]);
+        
+        $pdo->commit(); // Confirmar transacción
+        echo "Reserva eliminada y capacidad del vuelo actualizada.";
+    } catch (PDOException $e) {
+        $pdo->rollBack(); // Revertir transacción en caso de error
+        echo "Error al eliminar la reserva y actualizar la capacidad del vuelo: " . $e->getMessage();
+    }
+}
+
+
 
 // Lógica para procesar las operaciones CRUD:
 
