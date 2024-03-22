@@ -54,7 +54,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             'nombre' => $nombre,
             'apellidos' => $apellidos,
             'correo' => $correo,
-            'contrasena' => $contrasena, // Asegúrate de hashear la contraseña antes de almacenarla en la base de datos!
+            'contrasena' => $contrasena, 
             'fechaNacimiento' => $fechaNacimiento,
             'rol' => $rol
         ]);
@@ -72,9 +72,29 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="estilos.css">
     <title>Registro</title>
+    <style>
+        body {
+            background-image: url('../avion.jpg');
+            background-size: cover;
+            background-repeat: no-repeat;
+            margin: 200px 200px;
+        }
+        header {
+            background-color: #4CAF50;
+            text-align: center;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            color: black;
+            }
+    </style>
+
+
 </head>
 <body>
-    <h2>Registro</h2>
+    <header>
+        <h1>REGISTRO</h1>
+    </header>
     <?php if (!empty($mensaje_error)) : ?>
         <div style="color: red;"><?php echo $mensaje_error; ?></div>
     <?php endif; ?>

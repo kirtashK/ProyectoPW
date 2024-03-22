@@ -6,17 +6,51 @@
     <title>Panel de Administrador</title>
     <style>
         body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 20px;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             height: 100vh;
-            margin: 0;
+            background-image: url('../avionadmi.jpg');
+      
+        }
+
+        h1 {
+            color: white;
+            margin-bottom: 20px;
+        }
+
+        p {
+            color: white;
+            margin-bottom: 30px;
+            text-align: center;
         }
 
         form {
             margin-bottom: 20px;
+            display: flex;
+            justify-content: center;
         }
+
+        button {
+            background-color: #45a049;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+        
     </style>
 </head>
 <body>

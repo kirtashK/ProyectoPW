@@ -1,14 +1,74 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Administrador</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 100px 100px;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        h2 {
+            margin-bottom: 10px;
+        }
+        form {
+            margin-bottom: 20px;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        input{
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+            display: inline-block;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        input[type="submit"] {
+            width: 100%;
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            margin: 8px 0;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        input[type="submit"]:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <h1>ADMINISTRACIÓN DE LA RESERVA</h1>
+    <!-- Aquí va el resto del contenido -->
+</body>
+</html>
+
 <?php
 require_once "config.php";
 
 session_start();
 
-
 if (!isset($_COOKIE["usuario_rol"]) || $_COOKIE["usuario_rol"] !== "admin") {
     die("Acceso denegado. Debes iniciar sesión como administrador para acceder a esta página.");
 }
-
-
 
 // Función para mostrar todas las reservas:
 function mostrarReservas($pdo) {
@@ -66,6 +126,7 @@ function crearReserva($pdo, $idVuelo, $idUsuario, $fechaReserva, $precio) {
             
             // Actualizar la capacidad del vuelo
             $sql_actualizar_capacidad = "UPDATE vuelos SET capacidad = capacidad - 1 WHERE id=?";
+           
             $stmt_actualizar_capacidad = $pdo->prepare($sql_actualizar_capacidad);
             $stmt_actualizar_capacidad->execute([$idVuelo]);
             
@@ -80,7 +141,6 @@ function crearReserva($pdo, $idVuelo, $idUsuario, $fechaReserva, $precio) {
 }
 
 // Función para eliminar una reserva y devolver el dinero al usuario, y actualizar la capacidad del vuelo:
-// Función para eliminar una reserva y devolver el dinero al usuario, y actualizar la capacidad del vuelo:
 function eliminarReserva($pdo, $idReserva) {
     try {
         $pdo->beginTransaction(); // Comenzar transacción
@@ -90,7 +150,6 @@ function eliminarReserva($pdo, $idReserva) {
         $stmt_info_reserva = $pdo->prepare($sql_info_reserva);
         $stmt_info_reserva->execute([$idReserva]);
         $idVuelo = $stmt_info_reserva->fetchColumn();
-        echo $idVuelo;
         
         // Eliminar la reserva
         $sql_eliminar = "DELETE FROM reservas WHERE idReserva=?";
@@ -109,8 +168,6 @@ function eliminarReserva($pdo, $idReserva) {
         echo "Error al eliminar la reserva y actualizar la capacidad del vuelo: " . $e->getMessage();
     }
 }
-
-
 
 // Lógica para procesar las operaciones CRUD:
 
@@ -156,7 +213,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["buscar_reserva"])) {
                 echo "<h2>Reserva Encontrada:</h2>";
                 echo "<table border='1'><tr><th>ID Reserva</th><th>ID Vuelo</th><th>ID Usuario</th><th>Fecha de Reserva</th><th>Precio</th></tr>";
                 while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-                    echo "<tr><td>" . $row["idReserva"] . "</td><td>" . $row["idVuelo"] . "</td><td>" . $row["idUsuario"] . "</td><td>" . $row["fechaReserva"] . "</td><td>" . $row["precio"] . "</td></tr>";
+                    echo "<tr><td>" . $row["idReserva"] . "</td
+                    ><td>" . $row["idVuelo"] . "</td><td>" . $row["idUsuario"] . "</td><td>" . $row["fechaReserva"] . "</td><td>" . $row["precio"] . "</td></tr>";
                 }
                 echo "</table>";
             } else {
@@ -212,6 +270,5 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["buscar_modificar_reser
     }
 }
 ?>
-
-
-       
+</body>
+</html>

@@ -1,4 +1,65 @@
-<?php
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Administrador</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 100px 100px;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        h2 {
+            margin-bottom: 10px;
+        }
+        form {
+            margin-bottom: 20px;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        input{
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+            display: inline-block;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        input[type="submit"] {
+            width: 100%;
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 5px;
+            margin: 8px 0;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        input[type="submit"]:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <h1>ADMINISTRACIÓN DE LOS VUELOS</h1>
+    <!-- Aquí va el resto del contenido -->
+</body>
+</html><?php
 require_once "config.php";
 
 session_start();
@@ -119,11 +180,11 @@ echo "</form>";
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["mostrar_vuelo"])) {
     $id_vuelo = $_POST["id_vuelo"];
     try {
-        if ($id_vuelo !== null) {
+        if ($id_vuelo !== "") { // Verifica si se proporciona un ID
             $sql = "SELECT * FROM vuelos WHERE id=?";
             $stmt = $pdo->prepare($sql);
             $stmt->execute([$id_vuelo]);
-        } else {
+        } else { // Si no se proporciona un ID, muestra todos los vuelos
             $sql = "SELECT * FROM vuelos";
             $stmt = $pdo->query($sql);
         }
@@ -142,6 +203,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["mostrar_vuelo"])) {
         echo "Error al mostrar vuelos: " . $e->getMessage();
     }
 }
+
 // Formulario para modificar vuelo por ID:
     echo "<h2>Modificar Vuelo por ID:</h2>";
     echo "<form method='post'>";

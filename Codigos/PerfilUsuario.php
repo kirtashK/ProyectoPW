@@ -5,6 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Formulario de consulta de Vuelos</title>
     <link rel="stylesheet" href="estilos.css">
+    <style>       
+     header {
+                background-color: #4CAF50;
+                text-align: center;
+                padding: 20px;
+                margin-bottom: 20px;
+                border-radius: 8px;
+                color: black;
+            }</style>
 </head>
 <body>
     <header>

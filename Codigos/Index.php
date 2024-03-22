@@ -25,6 +25,22 @@
             return true;
         }
     </script>
+    <style>
+        body {
+            background-image: url('../avion.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+        header {
+                background-color: #4CAF50;
+                text-align: center;
+                padding: 20px;
+                margin-bottom: 20px;
+                border-radius: 8px;
+                color: black;
+            }
+    </style>
 </head>
 <body>
     <header>
